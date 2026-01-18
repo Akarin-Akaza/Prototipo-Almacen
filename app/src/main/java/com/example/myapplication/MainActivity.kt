@@ -28,6 +28,10 @@ class MainActivity : AppCompatActivity() {
         val adapter = ProductoAdapter { productoSeleccionado ->
             // Al hacer clic en un producto, abrimos el diálogo de movimientos
             mostrarDialogoMovimiento(productoSeleccionado)
+            val btnHistorial = findViewById<android.widget.Button>(R.id.btnVerHistorial)
+            btnHistorial.setOnClickListener {
+                mostrarDialogoHistorial()
+            }
         }
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -42,6 +46,33 @@ class MainActivity : AppCompatActivity() {
         fab.setOnClickListener {
             mostrarDialogoNuevoProducto()
         }
+    }
+    // ... tus otras funciones de dialogo (mostrarDialogoMovimiento, etc) ...
+
+    private fun mostrarDialogoHistorial() {
+        // 1. Crear el diseño de la ventana
+        val dialogView = layoutInflater.inflate(R.layout.activity_main, null)
+        // TRUCO: Usamos un RecyclerView nuevo en blanco programáticamente
+        val listaHistorial = RecyclerView(this)
+        listaHistorial.layoutManager = LinearLayoutManager(this)
+
+        val adapterHistorial = MovimientoAdapter()
+        listaHistorial.adapter = adapterHistorial
+
+        // 2. Conectar con los datos del ViewModel
+        // Observamos "todoElHistorial" que creamos antes
+        inventarioViewModel.todoElHistorial.observe(this) { movimientos ->
+            adapterHistorial.submitList(movimientos)
+            // Scroll automático al principio si hay nuevos
+            if (movimientos.isNotEmpty()) listaHistorial.smoothScrollToPosition(0)
+        }
+
+        // 3. Mostrar la ventana
+        AlertDialog.Builder(this)
+            .setTitle("Historial de Movimientos")
+            .setView(listaHistorial) // Ponemos la lista dentro de la ventana
+            .setPositiveButton("Cerrar", null)
+            .show()
     }
 
     // ---------------------------------------------------------
@@ -115,6 +146,7 @@ class MainActivity : AppCompatActivity() {
         inputCantidad.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
         inputCantidad.hint = "Stock Inicial (Ej: 0)"
         layout.addView(inputCantidad)
+
 
         builder.setView(layout)
 

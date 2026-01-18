@@ -21,6 +21,11 @@ interface ProductoDao {
 
     @Delete
     suspend fun eliminar(producto: Producto)
+    @Insert
+    suspend fun insertarMovimiento(movimiento: Movimiento)
+
+    @Query("SELECT * FROM historial_movimientos ORDER BY fecha DESC")
+    fun obtenerHistorial(): Flow<List<Movimiento>>
 
 
 

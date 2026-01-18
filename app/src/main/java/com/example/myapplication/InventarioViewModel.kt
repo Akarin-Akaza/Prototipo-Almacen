@@ -25,11 +25,20 @@ class InventarioViewModel(private val repository: ProductoDao) : ViewModel() {
             } else {
                 if (nuevaCantidad >= cantidadMovimiento) {
                     nuevaCantidad -= cantidadMovimiento
+                } else {
+                    return@launch // Si no alcanza, no hacemos nada
                 }
             }
             repository.actualizarStock(producto.id, nuevaCantidad)
+            val movimiento = Movimiento(
+                nombreProducto = producto.nombre,
+                cantidad = cantidadMovimiento,
+                esEntrada = esEntrada
+            )
+            repository.insertarMovimiento(movimiento)
         }
     }
+    val todoElHistorial: LiveData<List<Movimiento>> = repository.obtenerHistorial().asLiveData()
 }
 
 class InventarioViewModelFactory(private val repository: ProductoDao) : ViewModelProvider.Factory {
